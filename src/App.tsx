@@ -122,57 +122,6 @@ export default function App() {
   const [formStatus, setFormStatus] = useState<"idle" | "transmitting" | "sent">("idle");
   const [omnitrixUnlocked, setOmnitrixUnlocked] = useState<boolean>(false);
 
-  // Profile image upload state and handlers
-  const [profilePhoto, setProfilePhoto] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem("portfolio_profile_photo");
-      return saved || PORTFOLIO_OWNER.avatar;
-    } catch (e) {
-      return PORTFOLIO_OWNER.avatar;
-    }
-  });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-
-  const handlePhotoFileChange = (file: File | undefined) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setProfilePhoto(base64);
-      try {
-        localStorage.setItem("portfolio_profile_photo", base64);
-      } catch (err) {
-        console.warn("Storage upload exceeded capacity for base64 source, fallback to runtime memory", err);
-      }
-      if (!isMuted) {
-        // Play a diagnostic chirp using sound manager
-        sound.playBeep(880, "sine", 0.25, 0.15);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    handlePhotoFileChange(file);
-  };
-
   const activeMode = MODES[activeModeIndex];
 
   // Auto-unlock animation sequence on mount
@@ -230,14 +179,6 @@ export default function App() {
   return (
     <div id="portfolio_canvas" className="min-h-screen bg-omni-dark text-white font-sans bg-omni-grid relative select-none flex flex-col md:overflow-x-hidden">
       
-      {/* Hidden file input for uploading profile photo */}
-      <input 
-        type="file" 
-        id="profile-upload-input" 
-        accept="image/*" 
-        className="hidden" 
-        onChange={(e) => handlePhotoFileChange(e.target.files?.[0])}
-      />
 
       {/* Decorative sci-fi corners and sweep lasers */}
       <div className="absolute top-0 left-0 w-32 h-32 border-t-2 border-l-2 border-omni-dim/15 pointer-events-none" />
@@ -268,30 +209,15 @@ export default function App() {
       {/* CORE HEADER */}
       <header className="border-b border-omni-border/30 bg-[#0b0f19]/80 backdrop-blur-md relative z-40 py-4 px-4 md:px-8 flex items-center justify-between">
         
-        {/* Left identity logo with Omnitrix badge - Clickable to Upload Profile Photo */}
+        {/* Left identity logo with Omnitrix badge */}
         <div className="flex items-center space-x-3">
-          <div 
-            onClick={() => document.getElementById('profile-upload-input')?.click()}
-            className="relative w-11 h-11 flex items-center justify-center border border-omni-green/40 rounded-full bg-[#0c1017] p-0.5 shadow-[0_0_8px_rgba(16,185,129,0.2)] hover:shadow-[0_0_12px_rgba(16,185,129,0.45)] hover:border-omni-green shrink-0 animate-omni-pulse cursor-pointer group transition-all duration-300 overflow-hidden"
-            title="Click to raise photo transmigration portal (Upload)"
-          >
-            {profilePhoto ? (
-              <img 
-                src={profilePhoto} 
-                referrerPolicy="no-referrer"
-                className="w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                alt="Profile" 
-              />
-            ) : (
-              /* Minimal SVG hourglass Omnitrix brand fallback */
-              <svg viewBox="0 0 100 100" className="w-7 h-7 fill-omni-green animate-pulse">
-                <path d="M 15 15 L 85 15 L 85 30 Q 50 50 85 70 L 85 85 L 15 85 L 15 70 Q 50 50 15 30 Z" />
-              </svg>
-            )}
-            {/* Camera icon overlay on hover */}
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 rounded-full">
-              <Camera className="w-4 h-4 text-omni-green" />
-            </div>
+          <div className="relative w-11 h-11 flex items-center justify-center border border-omni-green/45 rounded-full bg-[#0c1017] p-0.5 shadow-[0_0_8px_rgba(16,185,129,0.2)] shrink-0 animate-omni-pulse overflow-hidden">
+            <img 
+              src={PORTFOLIO_OWNER.avatar} 
+              referrerPolicy="no-referrer"
+              className="w-full h-full rounded-full object-cover" 
+              alt={PORTFOLIO_OWNER.name} 
+            />
           </div>
           <div>
             <h1 className="font-display font-extrabold text-[#ffffff] text-base md:text-lg tracking-wider uppercase leading-none">
@@ -483,61 +409,21 @@ export default function App() {
                 {activeMode.id === "overview" && (
                   <div className="space-y-6 flex-1 flex flex-col justify-between">
                     <div>
-                      {/* Bio brief & Dynamic Profile Upload Module */}
+                      {/* Bio brief & Dynamic Profile Photo */}
                       <div className="bg-[#0b0f19]/70 border border-omni-border/40 rounded-xl p-5 md:p-6 mb-6 shadow-inner relative overflow-hidden">
                         <div className="absolute inset-0 bg-omni-grid opacity-15" />
                         
                         <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center md:items-start">
-                          {/* Left: Drag & Drop Interactive Profile Avatar zone */}
-                          <div 
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('profile-upload-input')?.click()}
-                            className={`relative w-28 h-28 md:w-32 md:h-32 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer group overflow-hidden select-none shrink-0 ${
-                              isDragging 
-                                ? "border-omni-green bg-omni-green/20 shadow-[0_0_20px_rgba(16,185,129,0.5)] scale-102" 
-                                : "border-omni-border/40 bg-black/60 hover:border-omni-green hover:shadow-[0_0_15px_rgba(16,185,129,0.25)]"
-                            }`}
-                            title="Drag & Drop or Click to change profile photo"
-                          >
-                            {/* Glow animation shadow */}
-                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
-                            
-                            {profilePhoto ? (
-                              <img 
-                                src={profilePhoto} 
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-107" 
-                                alt="Horn Vanhong Profile" 
-                              />
-                            ) : (
-                              <div className="text-omni-green/60 p-4 text-center flex flex-col items-center justify-center">
-                                <Upload className="w-8 h-8 mb-2 animate-bounce" />
-                                <span className="text-[10px] uppercase font-mono tracking-wider">No Photo</span>
-                              </div>
-                            )}
-
-                            {/* Hover info panel */}
-                            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-350 gap-1.5 text-center">
-                              <Camera className="w-6 h-6 text-omni-green animate-pulse" />
-                              <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-omni-green">
-                                {isDragging ? "DROP PORTAL" : "TRANSMIT PHOTO"}
-                              </span>
-                              <span className="text-[8px] font-mono text-white/50 lowercase">
-                                drag & drop or click
-                              </span>
-                            </div>
-
-                            {/* Dragging active banner overlay */}
-                            {isDragging && (
-                              <div className="absolute inset-0 bg-omni-green/20 backdrop-blur-xs flex items-center justify-center">
-                                <div className="text-center">
-                                  <Upload className="w-8 h-8 text-white mx-auto animate-bounce" />
-                                  <span className="text-[10px] font-mono font-bold uppercase text-white tracking-widest mt-1 block">DROP HERE</span>
-                                </div>
-                              </div>
-                            )}
+                          {/* Left: Futuristic Frame for Profile Avatar */}
+                          <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-2xl border-2 border-omni-green/45 bg-black/60 shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden select-none shrink-0 group">
+                            {/* Ambient dark vignetting over profile portrait */}
+                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent z-10" />
+                            <img 
+                              src={PORTFOLIO_OWNER.avatar} 
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                              alt={`${PORTFOLIO_OWNER.name} Profile`} 
+                            />
                           </div>
 
                           {/* Right: Personal identity bio fields */}

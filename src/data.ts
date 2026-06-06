@@ -6,7 +6,7 @@ export const PORTFOLIO_OWNER = {
   location: "Phnom Penh, Cambodia",
   tagline: "Securing the digital frontier. Transforming user interfaces.",
   bio: "I am an IT student at Royal University of Phnom Penh and an MPTC scholarship recipient specializing in Cyber Security at ANT Technology Training Center. I bridge the critical gap between high-level defensive security architectures and premium front-end user experiences.",
-  avatar: "/src/assets/images/omnitrix_dial_1780725279272.png",
+  avatar: "/src/assets/images/vanhong.jpg",
   contact: {
     email: "vanhonghorn37@gmail.com",
     phone: "+855 86-378-933",

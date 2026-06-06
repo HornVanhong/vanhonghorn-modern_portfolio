@@ -1,0 +1,6 @@
+{
+  "name": "Vanhong Horn Portfolio",
+  "description": "Ben 10 styled interactive portfolio for Vanhong Horn, a Cyber Security student and Front-End developer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
